@@ -19,9 +19,11 @@ class ATCGame:
         events = atc.EventServiceStub(self.channel)
         for event in events.Stream(atc.StreamRequest()):
             event_name = event.WhichOneof("event")
-            if fn := getattr(self, f"on_{event_name}"):
+            fn_name = f"on_{event_name}"
+            if fn := getattr(self, fn_name):
                 typed_event = getattr(event, event_name)
                 if self.BREAK is fn(typed_event):
+                    print(f"Received BREAK response from {fn_name}()")
                     break
             else:
                 raise RuntimeError(
@@ -31,6 +33,10 @@ class ATCGame:
     def on_game_started(self, event: atc.GameStarted):
         print("Game Started!")
         self.map = event.map
+
+        # This is only here to show how to exit the game.
+        # Remove this to continue receiving events.
+        return self.BREAK
 
     def on_game_stopped(self, event: atc.GameStopped):
         print(f"Game Over: {event.score}")

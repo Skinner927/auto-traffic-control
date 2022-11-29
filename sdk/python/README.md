@@ -2,6 +2,7 @@
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/jdno/auto-traffic-control/main)](https://github.com/jdno/auto-traffic-control/actions)
 [![License](https://img.shields.io/crates/l/auto-traffic-control)](https://www.npmjs.com/package/auto-traffic-control)
+
 <!-- ![Version](https://img.shields.io/npm/v/auto-traffic-control)](https://www.npmjs.com/package/auto-traffic-control) -->
 
 [Homepage](https://auto-traffic-control.com) |
@@ -25,6 +26,16 @@ First, install `auto-traffic-control` as a new dependency:
 ```shell
 pip install auto-traffic-control
 ```
+
+Or install it locally by cloning the source repo and running:
+
+```shell
+cd sdk/python
+python -m pip install .
+```
+
+If build fails, try to upgrade your `pip` and try again:
+`python -m pip install -U pip`.
 
 Then, create a service client and send a request. Check out the
 [documentation](https://auto-traffic-control.com) to learn about the different
@@ -58,9 +69,11 @@ class ATCGame:
         events = atc.EventServiceStub(self.channel)
         for event in events.Stream(atc.StreamRequest()):
             event_name = event.WhichOneof("event")
-            if fn := getattr(self, f"on_{event_name}"):
+            fn_name = f"on_{event_name}"
+            if fn := getattr(self, fn_name):
                 typed_event = getattr(event, event_name)
                 if self.BREAK is fn(typed_event):
+                    print(f"Received BREAK response from {fn_name}()")
                     break
             else:
                 raise RuntimeError(
@@ -70,6 +83,10 @@ class ATCGame:
     def on_game_started(self, event: atc.GameStarted):
         print("Game Started!")
         self.map = event.map
+
+        # This is only here to show how to exit the game.
+        # Remove this to continue receiving events.
+        return self.BREAK
 
     def on_game_stopped(self, event: atc.GameStopped):
         print(f"Game Over: {event.score}")
