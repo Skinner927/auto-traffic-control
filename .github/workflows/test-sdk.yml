@@ -61,29 +61,18 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Update pip and echo versions
-        run: |
-          python -m pip install --upgrade pip
-          python --version
-          python -m pip --version
+      - name: Update pip
+        run: python -m pip install --upgrade pip
       - name: Install Python SDK
-        run: tree sdk/python && python -m pip install sdk/python/.
-      - name: Verify Python SDK
-        run: |
-          tree "$(python -c 'print(__import__("pathlib").Path(__import__("atc").__file__).parent.resolve())')"
-      - name: Archive atc package
-        uses: actions/upload-artifact@v3
-        if: ${{ matrix.python-version }} == '3.8'
-        with:
-          name: atc-package-38
-          path: /opt/hostedtoolcache/Python/3.8.14/x64/lib/python3.8/site-packages/atc
+        run: python -m pip install sdk/python/.
       - name: Download test-server
         uses: actions/download-artifact@v3
         with:
           name: test-server
           path: bin
-      - name: Run Python example
-        run: |
-          chmod +x ./bin/test-server
-          ./bin/test-server &
-          python sdk/python/test.py
+      - name: Set permissions for test-server
+        run: chmod +x ./bin/test-server
+      - name: Start test-server
+        run: ./bin/test-server &
+      - name: Run Python SDK test
+        run: python sdk/python/test.py
