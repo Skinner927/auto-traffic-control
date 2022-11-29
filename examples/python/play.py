@@ -1,5 +1,6 @@
 import atc
 import grpc
+import logging
 
 
 class ATCGame:
@@ -75,4 +76,5 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     main()
